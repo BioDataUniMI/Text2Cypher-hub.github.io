@@ -1,0 +1,73 @@
+registry_version: 1
+
+datasets:
+  - id: bio2c-v1
+    name: bio2C
+    version: "v1"
+    resource_type: Benchmark
+
+    summary: >-
+      A biomedical benchmark containing 2,500 manually curated
+      natural language questions and corresponding Cypher queries over miRNA-KG.
+
+    dataset:
+      domains:
+        - Biomedical
+      languages:
+        - English
+      curation_method: Manually curated
+      total_pairs: 2500
+      executable_pairs: 2500
+      complexity_levels: 5
+      complexity_description: >-
+        The dataset is divided into five categories: node-level, 1-hop,
+        2-hop, 3-hop, and advanced. Each category contains 500 pairs.
+
+    endpoint:
+      url: https://neo4j.biodata.di.unimi.it
+      bolt: neo4j+s://helix.biodata.di.unimi.it:7687
+      username: Text2Cypher
+      password: Text2Cypher
+      database: mirnakgt2c
+      dump: https://zenodo.org/records/21486966/files/miRNAKGt2c.dump?download=1
+
+    license: TBA
+
+    best_reported_results:
+      source: 10.21203/rs.3.rs-10463153/v1
+
+      metrics:
+        jaro_winkler:
+          score: 94.7
+          model: GPT-4oFT
+          techniques:
+            - RAG
+            - RAG+O
+            - S+RAG
+
+        jaccard:
+          score: 86.4
+          model: GPT-4oFT
+          techniques:
+            - RAG
+
+        coverage:
+          score: 84.3
+          model: GPT-4oFT
+          techniques:
+            - RAG
+
+        pass_at_1:
+          reported_as: Pass
+          score: 89.3
+          model: GPT-4oFT
+          techniques:
+            - RAG
+            - S+RAG+O
+
+    notes:
+      - TBA
+
+    article_doi: 10.21203/rs.3.rs-10463153/v1
+
+    last_reviewed: 2026-08-03

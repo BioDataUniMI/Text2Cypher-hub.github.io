@@ -1,0 +1,57 @@
+name: Propose a Text2Cypher resource
+description: Suggest a dataset or benchmark for T2C-Registry
+title: "[Resource]: "
+labels: [resource]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve T2C-Registry. Please link primary sources.
+  - type: input
+    id: name
+    attributes:
+      label: Resource name
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Resource type
+      options:
+        - Dataset
+        - Benchmark
+        - Dataset + benchmark
+    validations:
+      required: true
+  - type: input
+    id: data
+    attributes:
+      label: Data URL
+      placeholder: https://...
+    validations:
+      required: true
+  - type: input
+    id: code
+    attributes:
+      label: Code URL
+      placeholder: https://...
+  - type: input
+    id: paper
+    attributes:
+      label: Paper URL or DOI
+      placeholder: https://...
+  - type: textarea
+    id: metadata
+    attributes:
+      label: Key metadata
+      description: Include size, domains, creation method, graphs, validation and license.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: The resource contains natural-language/Cypher pairs.
+          required: true
+        - label: I checked that these links are public and point to primary sources.
+          required: true

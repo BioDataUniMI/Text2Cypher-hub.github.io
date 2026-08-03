@@ -1,0 +1,10 @@
+- Project: T2C-Registry
+  Description: A curated, version-controlled catalogue of Text2Cypher datasets and benchmarks.
+  Page: "[Open registry](registry.md)"
+  Source: "[registry.yaml](https://github.com/BioDataUniMI/Text2Cypher-hub.github.io/blob/main/docs/registry.yaml)"
+  Status: Active
+- Project: Text2Cypher Evaluation Guide
+  Description: Shared guidance for evaluating syntax, schema usage, execution and result correctness.
+  Page: "[Read guide](evaluation.md)"
+  Source: "[evaluation.md](https://github.com/BioDataUniMI/Text2Cypher-hub.github.io/blob/main/docs/evaluation.md)"
+  Status: Active
