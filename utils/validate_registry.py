@@ -215,6 +215,42 @@ def validate(path: Path = REGISTRY) -> list[str]:
     elif registry_version < 1:
         errors.append("registry_version must be a positive integer")
 
+    databases = root.get("databases")
+    database_ids: set[str] = set()
+
+    if not isinstance(databases, list) or not databases:
+        errors.append("databases must be a non-empty list")
+    else:
+        for number, database in enumerate(databases, start=1):
+            label = f"database {number}"
+            if not isinstance(database, dict):
+                errors.append(f"{label}: expected a mapping")
+                continue
+            database_id = database.get("id")
+            if not _is_text(database_id) or not ID_PATTERN.fullmatch(database_id):
+                errors.append(f"{label}: id must be lowercase kebab-case")
+            elif database_id in database_ids:
+                errors.append(f"{label}: duplicate id {database_id!r}")
+            else:
+                database_ids.add(database_id)
+                label = database_id
+            if not _is_text(database.get("name")):
+                errors.append(f"{label}: name must be a non-empty string")
+            endpoint = database.get("endpoint")
+            if not isinstance(endpoint, dict):
+                errors.append(f"{label}: endpoint must be a mapping")
+                continue
+            if not _valid_url(endpoint.get("url"), {"http", "https"}):
+                errors.append(f"{label}: endpoint.url must be an HTTP(S) URL")
+            if not _valid_url(endpoint.get("bolt"), {"bolt", "bolt+s", "neo4j", "neo4j+s"}):
+                errors.append(f"{label}: endpoint.bolt must be a valid Neo4j/Bolt URL")
+            dump = endpoint.get("dump")
+            if dump is not None and not _valid_url(dump, {"http", "https"}):
+                errors.append(f"{label}: endpoint.dump must be an HTTP(S) URL")
+            for field in ("username", "password", "database"):
+                if not _is_text(endpoint.get(field)):
+                    errors.append(f"{label}: endpoint.{field} must be a non-empty string")
+
     datasets = root.get("datasets")
     if not isinstance(datasets, list) or not datasets:
         return errors + ["datasets must be a non-empty list"]
@@ -237,6 +273,15 @@ def validate(path: Path = REGISTRY) -> list[str]:
         else:
             seen_ids.add(resource_id)
             label = resource_id
+
+        database_references = _validate_string_list(
+            record.get("databases"), "databases", label, errors
+        )
+        for database_id in database_references:
+            if database_id not in database_ids:
+                errors.append(
+                    f"{label}: databases references unknown database {database_id!r}"
+                )
 
         for field in ("name", "version", "summary"):
             if not _is_text(record.get(field)):

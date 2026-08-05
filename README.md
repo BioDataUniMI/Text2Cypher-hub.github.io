@@ -8,12 +8,13 @@ The website is built with [MkDocs Material](https://squidfunk.github.io/mkdocs-m
 
 ## Run locally
 
-Python 3.9 or newer is required.
+Python 3.10 or newer is required.
 
 ```bash
 poetry install
 poetry run python3 utils/validate_registry.py
-poetry run mkdocs serve -f mkdocs.yaml -a 0.0.0.0:8002
+poetry run mkdocs build --strict -f mkdocs.yaml
+poetry run uvicorn service.app:app --host 0.0.0.0 --port 8002
 ```
 
 Without Poetry:
@@ -21,10 +22,11 @@ Without Poetry:
 ```bash
 python3 -m pip install -r requirements.txt
 python3 utils/validate_registry.py
-mkdocs serve -f mkdocs.yaml -a 0.0.0.0:8002
+mkdocs build --strict -f mkdocs.yaml
+uvicorn service.app:app --host 0.0.0.0 --port 8002
 ```
 
-Then open http://<server-ip-or-domain>:8002/. T2C-Registry is available at http://<server-ip-or-domain>:8002/registry/.
+Then open http://<server-ip-or-domain>:8002/. T2C-Registry is available at `/registry/` and the CyVer service at `/query-validator/`.
 
 ## Add a registry resource
 
@@ -41,3 +43,8 @@ The workflow in `.github/workflows/deploy.yml` validates and publishes T2C-Hub t
 ## License
 
 The website code and original documentation use the license in [`LICENSE`](LICENSE). Each resource listed in T2C-Registry retains its own license; always check the upstream source before reuse.
+## Database associations
+
+Neo4j connections are defined once in the top-level `databases` list in `docs/registry.yaml`. Each benchmark references one or more entries through its `databases` list. The query validator therefore accepts database IDs, while retaining the association with the relevant benchmarks.
+
+Natural-language questions are embedded with `sentence-transformers/all-mpnet-base-v2` and compared with the question embeddings in `embeddings/<benchmark-id>.npz`. The global top five are selected across every benchmark associated with the chosen database.

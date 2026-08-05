@@ -39,3 +39,52 @@
 .registry-entry[hidden] { display: none; }
 .registry-badge { display: inline-block; margin: 0 0 .75rem; padding: .18rem .55rem; color: var(--md-primary-fg-color); font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; border: 1px solid currentColor; border-radius: 999px; }
 [data-md-color-scheme="slate"] .registry-entry { box-shadow: none; }
+
+.query-validator { display: grid; gap: .65rem; margin: 1.5rem 0; padding: 1.25rem; border: 1px solid var(--md-default-fg-color--lightest); border-radius: .8rem; background: var(--md-code-bg-color); }
+.query-validator label { font-weight: 700; }
+.query-validator select, .query-validator textarea { width: 100%; padding: .65rem .75rem; color: var(--md-default-fg-color); border: 1px solid var(--md-default-fg-color--lighter); border-radius: .4rem; background: var(--md-default-bg-color); }
+.query-validator textarea { font: .78rem/1.55 var(--md-code-font-family); resize: vertical; }
+.query-validator .md-button { justify-self: start; margin-top: .35rem; }
+.query-validator-status { min-height: 1.4rem; color: var(--md-default-fg-color--light); }
+.query-validator-status--error { color: var(--md-typeset-color); font-weight: 700; }
+.query-scores { display: grid; grid-template-columns: repeat(4, minmax(7rem, 1fr)); gap: .75rem; margin: 1rem 0; }
+.query-score { padding: .8rem 1rem; border: 1px solid var(--md-default-fg-color--lightest); border-left: .25rem solid #dc2626; border-radius: .5rem; }
+.query-score--ok { border-left-color: #16a34a; }
+.query-score span, .query-score strong { display: block; }
+.query-score span { color: var(--md-default-fg-color--light); font-size: .72rem; text-transform: uppercase; }
+.query-score strong { margin-top: .2rem; font-size: 1.25rem; }
+.query-message { margin: .65rem 0; padding: .65rem .8rem; border-radius: .35rem; background: rgba(245, 158, 11, .12); }
+.query-message--error { background: rgba(220, 38, 38, .12); }
+.query-table-wrap { overflow-x: auto; }
+.query-table-wrap table { min-width: 100%; }
+.query-table-wrap code { white-space: pre-wrap; word-break: break-word; }
+
+@media screen and (max-width: 52rem) {
+  .query-scores { grid-template-columns: repeat(2, 1fr); }
+}
+
+.query-mock-badge { display: inline-block; vertical-align: middle; margin-left: .35rem; padding: .12rem .45rem; color: #92400e; font-size: .6rem; letter-spacing: .06em; text-transform: uppercase; border: 1px solid #d97706; border-radius: 999px; }
+.query-similar-note { color: var(--md-default-fg-color--light); }
+.query-similar-list { display: grid; gap: .8rem; }
+.query-similar-item { padding: 1rem; border: 1px solid var(--md-default-fg-color--lightest); border-radius: .6rem; }
+.query-similar-item p { margin: .55rem 0; }
+.query-similar-item pre { margin: .55rem 0; }
+.query-similar-item small { color: var(--md-default-fg-color--light); }
+.query-similar-heading { display: flex; justify-content: space-between; gap: 1rem; }
+.query-similar-heading span { color: var(--md-primary-fg-color); font-weight: 700; }
+.query-similar-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .65rem; }
+
+.benchmark-browser { margin: 1rem 0 2rem; }
+.benchmark-browser-controls { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.benchmark-browser-controls label { flex: 1; font-weight: 700; }
+.benchmark-browser-controls input { display: block; width: 100%; margin-top: .35rem; padding: .55rem .7rem; color: var(--md-default-fg-color); border: 1px solid var(--md-default-fg-color--lighter); border-radius: .35rem; background: var(--md-default-bg-color); }
+.benchmark-example-list { display: grid; gap: .8rem; }
+.benchmark-example { padding: 1rem; border: 1px solid var(--md-default-fg-color--lightest); border-radius: .6rem; }
+.benchmark-example p, .benchmark-example pre { margin: .55rem 0; }
+.benchmark-example-heading { display: flex; justify-content: space-between; gap: 1rem; }
+.benchmark-example-heading span { color: var(--md-primary-fg-color); font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+.benchmark-pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem; }
+
+@media screen and (max-width: 40rem) {
+  .benchmark-browser-controls { align-items: stretch; flex-direction: column; }
+}

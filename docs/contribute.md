@@ -9,6 +9,7 @@ A proposed resource must contain paired natural-language questions and Cypher qu
 - be hosted in a public, version-controlled repository;
 - include, where possible, the code and configuration files required to reproduce the reported results;
 - identify the dataset, data split, graph snapshot, and database version used for evaluation;
+- add Neo4j connections to the top-level `databases` list and associate benchmarks through their `databases` ID list;
 - clearly distinguish between LLM-assisted and manually curated data;
 - remain open to corrections, extensions, and reuse by the community.
 

@@ -67,6 +67,25 @@ def _load_registry(config: Any) -> list[dict[str, Any]]:
             "registry.yaml must contain a YAML mapping at the top level."
         )
 
+    raw_databases = raw_data.get("databases", [])
+    if not isinstance(raw_databases, list):
+        raise ValueError("databases in registry.yaml must be a YAML list.")
+    database_by_id: dict[str, dict[str, Any]] = {}
+    for index, raw_database in enumerate(raw_databases, start=1):
+        if not isinstance(raw_database, Mapping):
+            raise ValueError(f"Database entry {index} must be a YAML mapping.")
+        database = dict(raw_database)
+        database_id = database.get("id")
+        if not _is_text(database_id) or not ID_PATTERN.fullmatch(database_id):
+            raise ValueError(f"Database entry {index} has an invalid id {database_id!r}.")
+        if database_id in database_by_id:
+            raise ValueError(f"Duplicate database id: {database_id!r}.")
+        endpoint = database.get("endpoint", {})
+        if not isinstance(endpoint, Mapping):
+            raise ValueError(f"Database {database_id!r} has an invalid endpoint.")
+        database["endpoint"] = dict(endpoint)
+        database_by_id[database_id] = database
+
     raw_datasets = raw_data.get("datasets", [])
 
     if raw_datasets is None:
@@ -116,6 +135,26 @@ def _load_registry(config: Any) -> list[dict[str, Any]]:
             )
 
         record["version"] = version.strip()
+
+        raw_database_ids = record.get("databases", [])
+        if not isinstance(raw_database_ids, list) or not all(
+            _is_text(database_id) for database_id in raw_database_ids
+        ):
+            raise ValueError(
+                f"Dataset {record_id!r} must define databases as a list of IDs."
+            )
+        unknown_database_ids = [
+            database_id for database_id in raw_database_ids
+            if database_id not in database_by_id
+        ]
+        if unknown_database_ids:
+            raise ValueError(
+                f"Dataset {record_id!r} references unknown databases: "
+                + ", ".join(unknown_database_ids)
+            )
+        record["_databases"] = [
+            database_by_id[database_id] for database_id in raw_database_ids
+        ]
 
         raw_dataset = record.get("dataset", {})
 
@@ -643,10 +682,11 @@ def _render_material(
 
 def _render_endpoint(
     endpoint: Mapping[str, Any],
+    heading: str = "## Endpoint",
 ) -> list[str]:
     """Render graph endpoint and dump information."""
     lines = [
-        "## Endpoint",
+        heading,
         "",
         "| Property | Value |",
         "|---|---|",
@@ -797,9 +837,11 @@ def _render_detail_page(
     dataset = _mapping(
         record.get("dataset")
     )
-    endpoint = _mapping(
-        record.get("endpoint")
-    )
+    database_records = [
+        dict(database)
+        for database in _as_list(record.get("_databases"))
+        if isinstance(database, Mapping)
+    ]
     evaluation = _mapping(
         record.get("evaluation")
     )
@@ -817,6 +859,13 @@ def _render_detail_page(
         record.get("version"),
         "",
     )
+    record_id = _text(record.get("id"), "")
+    resource_available = (
+        Path(__file__).resolve().parents[1]
+        / "resources"
+        / f"{record_id}.json"
+    ).is_file()
+
 
     raw_materials = _as_list(
         record.get("materials")
@@ -910,11 +959,38 @@ def _render_detail_page(
         ),
     ]
 
-    if endpoint:
+    if database_records:
+        for database in database_records:
+            endpoint = _mapping(database.get("endpoint"))
+            lines.extend(
+                [
+                    "",
+                    f"## Database: {escape(_text(database.get('name')))}",
+                    "",
+                    *_render_endpoint(endpoint, "### Endpoint"),
+                ]
+            )
+
+    if resource_available:
+        safe_record_id = _attribute(record_id)
         lines.extend(
             [
                 "",
-                *_render_endpoint(endpoint),
+                "## Dataset examples",
+                "",
+                f'<div class="benchmark-browser" data-benchmark-resource="{safe_record_id}">',
+                '<div class="benchmark-browser-controls">',
+                '<label>Search <input type="search" data-benchmark-search placeholder="Question, Cypher or notes"></label>',
+                f'<a class="md-button" href="/api/benchmarks/{safe_record_id}/resource">Download JSON</a>',
+                '</div>',
+                '<p data-benchmark-status>Loading examples…</p>',
+                '<div class="benchmark-example-list" data-benchmark-results></div>',
+                '<div class="benchmark-pagination">',
+                '<button class="md-button" type="button" data-benchmark-previous disabled>Previous</button>',
+                '<span data-benchmark-page></span>',
+                '<button class="md-button" type="button" data-benchmark-next disabled>Next</button>',
+                '</div>',
+                '</div>',
             ]
         )
 

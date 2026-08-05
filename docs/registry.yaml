@@ -1,4 +1,16 @@
 registry_version: 1
+#aggiungere il file JSON standardizzato per ogni entry come segue: NL/Cypher/Notes (nel caso dei nostri dataset le notes sono la categoria)
+databases:
+  - id: mirnakg-t2c
+    name: miRNA-KG T2C
+    endpoint:
+      url: https://neo4j.biodata.di.unimi.it
+      bolt: neo4j+s://helix.biodata.di.unimi.it:7687
+      username: Text2Cypher
+      password: Text2Cypher
+      database: mirnakgt2c
+      dump: https://zenodo.org/records/21486966/files/miRNAKGt2c.dump?download=1
+
 
 datasets:
   - id: bio2c-v1
@@ -23,14 +35,8 @@ datasets:
         The dataset is divided into five categories: node-level, 1-hop,
         2-hop, 3-hop, and advanced. Each category contains 500 pairs.
 
-    endpoint:
-      url: https://neo4j.biodata.di.unimi.it
-      bolt: neo4j+s://helix.biodata.di.unimi.it:7687
-      username: Text2Cypher
-      password: Text2Cypher
-      database: mirnakgt2c
-      dump: https://zenodo.org/records/21486966/files/miRNAKGt2c.dump?download=1
-
+    databases:
+      - mirnakg-t2c
     license: TBA
 
     best_reported_results:
