@@ -19,21 +19,34 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
-      - name: Install site dependencies
-        run: pip install -r requirements.txt
+          cache-dependency-path: requirements-docs.txt
+
+      - name: Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v6
+
+      - name: Install documentation dependencies
+        run: pip install -r requirements-docs.txt
+
       - name: Validate registry
         run: python utils/validate_registry.py
+
       - name: Build site
         env:
-          SITE_URL: https://biodataunimi.github.io/Text2Cypher-hub.github.io/
+          SITE_URL: ${{ steps.pages.outputs.base_url }}/
         run: mkdocs build --strict -f mkdocs.yaml
-      - uses: actions/upload-pages-artifact@v3
+
+      - name: Upload GitHub Pages artifact
         if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
@@ -47,4 +60,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

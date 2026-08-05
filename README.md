@@ -39,6 +39,7 @@ See the [contribution guide](docs/contribute.md) for field definitions and inclu
 ## Deploy
 
 The workflow in `.github/workflows/deploy.yml` validates and publishes T2C-Hub to GitHub Pages on every push to `main`. In the repository settings, select **GitHub Actions** as the Pages source.
+The Pages workflow installs only the static-site dependencies from `requirements-docs.txt`; the FastAPI service uses the complete `requirements.txt`.
 
 ## License
 

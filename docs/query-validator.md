@@ -37,4 +37,4 @@ Choose a registered Neo4j database, then provide either a read-only Cypher query
   <div data-query-similar></div>
 </section>
 
-The **KG valid** result follows CyVer's definition: valid syntax, schema score equal to 1, and property score equal to 1 (or not applicable). Similarity percentages are cosine similarities computed with `sentence-transformers/all-mpnet-base-v2` over the natural-language `question` field.
+The **KG valid** result follows CyVer's definition: valid syntax, schema score equal to 1, and property score equal to 1 (or not applicable). Similarity percentages are cosine similarities computed with `sentence-transformers/all-mpnet-base-v2` over the natural-language `question` field. One can pose the NL question, check the semantically similar ones in the benchmarks associated with the DB, and then generate/refine the Cypher with the help of LLMs (we recommend to use semantically similar questions as context in the prompt).
