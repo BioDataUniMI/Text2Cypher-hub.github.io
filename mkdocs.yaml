@@ -43,13 +43,12 @@ plugins:
   - table-reader
 
 nav:
-  - T2C-Hub: index.md
-  - T2C-Registry:
-      - Browse the registry: registry.md
-      - Contribute a resource: contribute.md
-  - Evaluation guide:
-      - T2C evaluation metrics: evaluation.md
-  - Query validator: query-validator.md
+  - Services:
+      - T2C-Registry:
+          - Browse the registry: registry.md
+          - Contribute a resource: contribute.md
+      - Query assistant: query-assistant.md
+      - Evaluation guide: evaluation.md
   - About:
       - How to cite: citing.md
       - Support: support.md
@@ -74,9 +73,10 @@ extra_css:
 extra_javascript:
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort.js
+  - javascripts/sidebar-home.js
   - javascripts/registry.js
   - javascripts/benchmark-resource.js
-  - javascripts/query-validator.js
+  - javascripts/query-assistant.js
   - javascripts/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 

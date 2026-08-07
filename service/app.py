@@ -24,7 +24,6 @@ ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = ROOT / "docs" / "registry.yaml"
 SITE_PATH = ROOT / "site"
 QUERY_TIMEOUT_SECONDS = float(os.getenv("T2C_QUERY_TIMEOUT", "15"))
-MAX_ROWS = int(os.getenv("T2C_MAX_ROWS", "100"))
 MAX_QUERY_LENGTH = int(os.getenv("T2C_MAX_QUERY_LENGTH", "20000"))
 
 FORBIDDEN_CLAUSES = re.compile(
@@ -50,6 +49,15 @@ class SimilarityRequest(BaseModel):
 class ValidationRequest(BaseModel):
     database_id: str = Field(min_length=1, max_length=200)
     query: str = Field(min_length=1, max_length=MAX_QUERY_LENGTH)
+
+
+SAMPLE_ROW_LIMIT = 3
+MAX_SAMPLE_QUERIES = 5
+
+
+class SampleQueryRequest(BaseModel):
+    database_id: str = Field(min_length=1, max_length=200)
+    queries: list[str] = Field(min_length=1, max_length=MAX_SAMPLE_QUERIES)
 
 
 def _load_registry() -> dict[str, Any]:
@@ -282,7 +290,6 @@ def validate(request: ValidationRequest) -> dict[str, Any]:
             "columns": [],
             "rows": [],
             "returned_rows": 0,
-            "truncated": False,
             "warnings": [],
             "error": None,
         },
@@ -346,15 +353,11 @@ def validate(request: ValidationRequest) -> dict[str, Any]:
             ) as session:
                 result = session.run(Query(query, timeout=QUERY_TIMEOUT_SECONDS))
                 columns = list(result.keys())
-                fetched = result.fetch(MAX_ROWS + 1)
-                report["execution"]["truncated"] = len(fetched) > MAX_ROWS
-                records = [_json_value(record.data()) for record in fetched[:MAX_ROWS]]
-                notifications = []
-                if not report["execution"]["truncated"]:
-                    summary = result.consume()
-                    notifications = [
-                        _notification(item) for item in (summary.notifications or [])
-                    ]
+                records = [_json_value(record.data()) for record in result]
+                summary = result.consume()
+                notifications = [
+                    _notification(item) for item in (summary.notifications or [])
+                ]
             report["execution"].update(
                 {
                     "succeeded": True,
@@ -364,10 +367,6 @@ def validate(request: ValidationRequest) -> dict[str, Any]:
                     "warnings": notifications,
                 }
             )
-            if report["execution"]["truncated"]:
-                report["warnings"].append(
-                    f"Output truncated to the first {MAX_ROWS} rows."
-                )
     except Exception as error:
         item = _neo4j_error(error)
         report["errors"].append(item)
@@ -376,10 +375,58 @@ def validate(request: ValidationRequest) -> dict[str, Any]:
     return report
 
 
-@app.get("/query-validator")
+@app.post("/api/run-samples")
+def run_samples(request: SampleQueryRequest) -> dict[str, Any]:
+    database, _ = _find_database(request.database_id)
+    endpoint = database["endpoint"]
+    results: list[dict[str, Any]] = []
+    try:
+        with GraphDatabase.driver(
+            endpoint["bolt"],
+            auth=(endpoint["username"], endpoint["password"]),
+            connection_timeout=QUERY_TIMEOUT_SECONDS,
+        ) as driver:
+            driver.verify_connectivity()
+            for raw_query in request.queries:
+                query = raw_query.strip()
+                entry: dict[str, Any] = {"columns": [], "rows": [], "error": None}
+                try:
+                    if not query:
+                        raise HTTPException(status_code=422, detail="Empty query.")
+                    _assert_read_only(query)
+                    with driver.session(
+                        database=endpoint["database"], default_access_mode=READ_ACCESS
+                    ) as session:
+                        result = session.run(Query(query, timeout=QUERY_TIMEOUT_SECONDS))
+                        columns = list(result.keys())
+                        records = [_json_value(record.data()) for record in result]
+                        result.consume()
+                    entry["columns"] = columns
+                    entry["rows"] = records[:SAMPLE_ROW_LIMIT]
+                except HTTPException as error:
+                    entry["error"] = str(error.detail)
+                except Exception as error:
+                    entry["error"] = _neo4j_error(error)["message"]
+                results.append(entry)
+    except Exception as error:
+        raise HTTPException(status_code=502, detail=_neo4j_error(error)["message"])
+    return {"results": results}
+
+
+@app.get("/query-assistant")
 def validator_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/query-validator/")
+    return RedirectResponse(url="/query-assistant/")
+
+
+@app.get("/query-validator")
+@app.get("/query-validator/")
+def legacy_validator_redirect() -> RedirectResponse:
+    return RedirectResponse(url="/query-assistant/")
 
 
 if SITE_PATH.is_dir():
     app.mount("/", StaticFiles(directory=SITE_PATH, html=True), name="site")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8003)

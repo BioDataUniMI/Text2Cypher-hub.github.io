@@ -3,7 +3,12 @@
   Page: "[Open registry](registry.md)"
   Source: "[registry.yaml](https://github.com/BioDataUniMI/Text2Cypher-hub.github.io/blob/main/docs/registry.yaml)"
   Status: Active
-- Project: Text2Cypher Evaluation Guide
+- Project: T2C Query Assistant
+  Description: Validates Cypher with CyVer and executes read-only queries against registered Neo4j databases.
+  Page: "[Open query assistant](query-assistant.md)"
+  Source: "[service/app.py](https://github.com/BioDataUniMI/Text2Cypher-hub.github.io/blob/main/service/app.py)"
+  Status: Active
+- Project: T2C Evaluation Guide
   Description: Shared guidance for evaluating syntax, schema usage, execution and result correctness.
   Page: "[Read guide](evaluation.md)"
   Source: "[evaluation.md](https://github.com/BioDataUniMI/Text2Cypher-hub.github.io/blob/main/docs/evaluation.md)"

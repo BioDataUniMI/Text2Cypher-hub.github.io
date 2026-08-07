@@ -352,10 +352,9 @@ def _join_code_values(value: Any) -> str:
 
 
 def _render_dataset_name(value: Any) -> str:
-    """Render a dataset name, italicizing bio2C."""
     name = _text(value)
 
-    if name.strip().lower() == "bio2c":
+    if name.strip().lower().endswith("2c"):
         return f"<em>{escape(name)}</em>"
 
     return escape(name)
@@ -548,6 +547,37 @@ def _render_version_link(
     )
 
 
+def _search_blob(record: Mapping[str, Any], dataset: Mapping[str, Any]) -> str:
+    """Build extra, non-displayed searchable text for a registry summary row."""
+    license_data = record.get("license")
+    if isinstance(license_data, Mapping):
+        license_text = _text(
+            license_data.get("id")
+            or license_data.get("name")
+            or license_data.get("title"),
+            "",
+        )
+    else:
+        license_text = _text(license_data, "")
+
+    materials = ", ".join(
+        _text(material.get("title")) or _text(material.get("type"))
+        for material in _as_list(record.get("materials"))
+        if isinstance(material, Mapping)
+    )
+
+    parts = [
+        _text(record.get("summary"), ""),
+        _text(record.get("resource_type"), ""),
+        _join_values(dataset.get("languages")),
+        license_text,
+        _text(record.get("article_doi"), ""),
+        materials,
+    ]
+
+    return " ".join(part for part in parts if part and part != "Not documented")
+
+
 def _render_summary(
     datasets: list[dict[str, Any]],
     current_file: File,
@@ -555,6 +585,7 @@ def _render_summary(
 ) -> str:
     """Render the compact registry summary table."""
     lines = [
+        '<div class="registry-summary-wrap">',
         '<table class="registry-summary">',
         "<thead>",
         "<tr>",
@@ -581,6 +612,9 @@ def _render_summary(
         curation = _attribute(
             dataset.get("curation_method"),
         )
+        search_blob = _attribute(
+            _search_blob(record, dataset),
+        )
 
         total_pairs = _number(
             dataset.get("total_pairs")
@@ -602,7 +636,8 @@ def _render_summary(
             [
                 (
                     f'<tr data-registry-id="{record_id}" '
-                    f'data-registry-curation="{curation}">'
+                    f'data-registry-curation="{curation}" '
+                    f'data-registry-search="{search_blob}">'
                 ),
                 (
                     "<td>"
@@ -642,6 +677,7 @@ def _render_summary(
         [
             "</tbody>",
             "</table>",
+            "</div>",
         ]
     )
 
@@ -682,50 +718,49 @@ def _render_material(
 
 def _render_endpoint(
     endpoint: Mapping[str, Any],
-    heading: str = "## Endpoint",
+    name: Any = None,
+    heading: str = "## Database",
 ) -> list[str]:
     """Render graph endpoint and dump information."""
-    lines = [
-        heading,
-        "",
-        "| Property | Value |",
-        "|---|---|",
-    ]
+    lines = [heading, ""]
+
+    if name:
+        lines.append(f"- **Name:** {_cell(name)}")
 
     if endpoint.get("url"):
         lines.append(
-            "| Web endpoint | "
-            f"{_external_link(endpoint.get('url'), endpoint.get('url'))} |"
+            "- **Web endpoint:** "
+            f"{_external_link(endpoint.get('url'), endpoint.get('url'))}"
         )
 
     if endpoint.get("bolt"):
         lines.append(
-            "| Bolt endpoint | "
-            f"{_code_value(endpoint.get('bolt'))} |"
+            "- **Bolt endpoint:** "
+            f"{_code_value(endpoint.get('bolt'))}"
         )
 
     if endpoint.get("username"):
         lines.append(
-            "| Username | "
-            f"{_code_value(endpoint.get('username'))} |"
+            "- **Username:** "
+            f"{_code_value(endpoint.get('username'))}"
         )
 
     if endpoint.get("password"):
         lines.append(
-            "| Password | "
-            f"{_code_value(endpoint.get('password'))} |"
+            "- **Password:** "
+            f"{_code_value(endpoint.get('password'))}"
         )
 
     if endpoint.get("database"):
         lines.append(
-            "| Database | "
-            f"{_code_value(endpoint.get('database'))} |"
+            "- **Neo4j database:** "
+            f"{_code_value(endpoint.get('database'))}"
         )
 
     if endpoint.get("dump"):
         lines.append(
-            "| Neo4j dump | "
-            f"{_external_link('Download dump', endpoint.get('dump'))} |"
+            "- **Neo4j dump:** "
+            f"{_external_link('Download dump', endpoint.get('dump'))}"
         )
 
     return lines
@@ -923,39 +958,41 @@ def _render_detail_page(
         "",
         "## Statistics",
         "",
-        "| Property | Value |",
-        "|---|---|",
         (
-            "| Version | "
-            f"{_cell(version)} |"
+            "- **Version:** "
+            f"{_cell(version)}"
         ),
         (
-            "| Domains | "
-            f"{_cell(domains)} |"
+            "- **Persistent link:** "
+            f"{_render_source(record.get('dataset_doi'))}"
         ),
         (
-            "| Languages | "
-            f"{_cell(languages)} |"
+            "- **Domains:** "
+            f"{_cell(domains)}"
         ),
         (
-            "| Curation | "
-            f"{_cell(dataset.get('curation_method'))} |"
+            "- **Languages:** "
+            f"{_cell(languages)}"
         ),
         (
-            "| Total NL–Cypher pairs | "
-            f"{escape(_number(dataset.get('total_pairs')))} |"
+            "- **Curation:** "
+            f"{_cell(dataset.get('curation_method'))}"
         ),
         (
-            "| Graph-executable pairs | "
-            f"{escape(_number(dataset.get('executable_pairs')))} |"
+            "- **Total NL–Cypher pairs:** "
+            f"{escape(_number(dataset.get('total_pairs')))}"
         ),
         (
-            "| Complexity levels | "
-            f"{escape(_number(dataset.get('complexity_levels')))} |"
+            "- **Graph-executable pairs:** "
+            f"{escape(_number(dataset.get('executable_pairs')))}"
         ),
         (
-            "| Complexity definition | "
-            f"{_cell(dataset.get('complexity_description'))} |"
+            "- **Complexity levels:** "
+            f"{escape(_number(dataset.get('complexity_levels')))}"
+        ),
+        (
+            "- **Complexity definition:** "
+            f"{_cell(dataset.get('complexity_description'))}"
         ),
     ]
 
@@ -965,9 +1002,7 @@ def _render_detail_page(
             lines.extend(
                 [
                     "",
-                    f"## Database: {escape(_text(database.get('name')))}",
-                    "",
-                    *_render_endpoint(endpoint, "### Endpoint"),
+                    *_render_endpoint(endpoint, database.get("name")),
                 ]
             )
 

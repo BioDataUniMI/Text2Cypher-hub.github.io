@@ -2,7 +2,7 @@ registry_version: 1
 #aggiungere il file JSON standardizzato per ogni entry come segue: NL/Cypher/Notes (nel caso dei nostri dataset le notes sono la categoria)
 databases:
   - id: mirnakg-t2c
-    name: miRNA-KG T2C
+    name: miRNA-KG
     endpoint:
       url: https://neo4j.biodata.di.unimi.it
       bolt: neo4j+s://helix.biodata.di.unimi.it:7687
@@ -10,6 +10,26 @@ databases:
       password: Text2Cypher
       database: mirnakgt2c
       dump: https://zenodo.org/records/21486966/files/miRNAKGt2c.dump?download=1
+
+  - id: russiantwittertrolls-t2c
+    name: Russian Twitter Trolls
+    endpoint:
+      url: https://neo4j.biodata.di.unimi.it
+      bolt: neo4j+s://helix.biodata.di.unimi.it:7687
+      username: Text2Cypher
+      password: Text2Cypher
+      database: rttt2c
+      dump: https://zenodo.org/records/21682439/files/RTTt2c.dump?download=1
+
+  - id: bloom-t2c
+    name: Bloom
+    endpoint:
+      url: https://neo4j.biodata.di.unimi.it
+      bolt: neo4j+s://helix.biodata.di.unimi.it:7687
+      username: Text2Cypher
+      password: Text2Cypher
+      database: bloom
+      dump: https://zenodo.org/records/21839034/files/Bloomt2c.dump?download=1
 
 
 datasets:
@@ -37,7 +57,7 @@ datasets:
 
     databases:
       - mirnakg-t2c
-    license: TBA
+    license: CC BY 4.0
 
     best_reported_results:
       source: 10.21203/rs.3.rs-10463153/v1
@@ -71,9 +91,127 @@ datasets:
             - RAG
             - S+RAG+O
 
-    notes:
-      - TBA
+    article_doi: 10.21203/rs.3.rs-10463153/v1
+    dataset_doi: 10.5281/zenodo.21486966
+
+    last_reviewed: 2026-08-03
+
+  - id: twt2c-v1
+    name: twt2C
+    version: "v1"
+    resource_type: Benchmark
+
+    summary: >-
+      A social-media benchmark containing 2,500 manually curated
+      natural language questions and corresponding Cypher queries over the Russian Twitter Trolls database.
+
+    dataset:
+      domains:
+        - Social Media
+      languages:
+        - English
+      curation_method: Manually curated
+      total_pairs: 2500
+      executable_pairs: 2500
+      complexity_levels: 5
+      complexity_description: >-
+        The dataset is divided into five categories: node-level, 1-hop,
+        2-hop, 3-hop, and advanced. Each category contains 500 pairs.
+
+    databases:
+      - russiantwittertrolls-t2c
+    license: CC BY 4.0
+
+    best_reported_results:
+      source: 10.21203/rs.3.rs-10463153/v1
+
+      metrics:
+        jaro_winkler:
+          score: 96.7
+          model: GPT-4oFT
+          techniques:
+            - RAG+O
+
+        jaccard:
+          score: 92.8
+          model: GPT-4oFT
+          techniques:
+            - RAG+O
+
+        coverage:
+          score: 94.3
+          model: GPT-4oFT
+          techniques:
+            - RAG+O
+
+        pass_at_1:
+          reported_as: Pass
+          score: 92.8
+          model: GPT-4oFT
+          techniques:
+            - RAG+O
 
     article_doi: 10.21203/rs.3.rs-10463153/v1
+    dataset_doi: 10.5281/zenodo.21682439
+
+    last_reviewed: 2026-08-03
+
+  - id: fin2c-v1
+    name: fin2C
+    version: "v1"
+    resource_type: Benchmark
+
+    summary: >-
+      A financial benchmark containing 1,500 manually curated
+      natural language questions and corresponding Cypher queries over the Bloom database.
+
+    dataset:
+      domains:
+        - Finance
+      languages:
+        - English
+      curation_method: Manually curated
+      total_pairs: 1500
+      executable_pairs: 1500
+      complexity_levels: 5
+      complexity_description: >-
+        The dataset is divided into five categories: node-level, 1-hop,
+        2-hop, 3-hop, and advanced. Each category contains 300 pairs.
+
+    databases:
+      - bloom-t2c
+    license: CC BY 4.0
+
+    best_reported_results:
+      source: 10.21203/rs.3.rs-10463153/v1
+
+      metrics:
+        jaro_winkler:
+          score: 97.5
+          model: gpt-4o-mini FT
+          techniques:
+            - NeoDash
+
+        jaccard:
+          score: 95.0
+          model: gpt-4o-mini FT
+          techniques:
+            - NeoDash
+
+        coverage:
+          score: 95.9
+          model: gpt-4o
+          techniques:
+            - NeoDash
+
+        pass_at_1:
+          reported_as: Pass
+          score: 95.3
+          model: gpt-4o
+          techniques:
+            - NeoDash
+
+    article_doi: 10.21203/rs.3.rs-10463153/v1
+    dataset_doi: 10.5281/zenodo.21839034
 
     last_reviewed: 2026-08-03
